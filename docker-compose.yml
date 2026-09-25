@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  # Component 1: Frontend / Edge Proxy
+  nginx-frontend:
+    build: ./nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - juice-shop
+    networks:
+      - frontend-net
+      - backend-net
+
+  # Component 2: Backend API (Using official pre-containerized image as permitted by brief)
+  juice-shop:
+    image: bkimminich/juice-shop:latest
+    expose:
+      - "3000"
+    networks:
+      - backend-net
+    environment:
+      - NODE_ENV=unsafe
+
+# Network segmentation to demonstrate security best practices
+networks:
+  frontend-net:
+    driver: bridge
+  backend-net:
+    driver: bridge
+    internal: true # This prevents the backend from being accessed directly from the outside internet
