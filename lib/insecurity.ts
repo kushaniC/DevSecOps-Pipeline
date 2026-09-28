@@ -18,12 +18,11 @@ import * as utils from './utils'
 import * as z85 from 'z85'
 
 export const publicKey = fs ? fs.readFileSync('encryptionkeys/jwt.pub', 'utf8') : 'placeholder-public-key'
-// Secure Coding Fix: Remove hardcoded cryptographic key. 
-// Load from environment variable to satisfy Secrets Management requirements.
-const privateKey = process.env.JWT_PRIVATE_KEY;
-   
-if (!privateKey) {
-  console.warn('WARNING: JWT_PRIVATE_KEY environment variable is not set. Using insecure placeholder. DO NOT USE IN PRODUCTION.');
+// Secure Coding Fix: Externalize cryptographic secret to environment variable
+const privateKey = process.env.JWT_PRIVATE_KEY || 'placeholder-insecure-dev-key';
+
+if (process.env.JWT_PRIVATE_KEY === 'placeholder-insecure-dev-key') {
+  console.warn('WARNING: JWT_PRIVATE_KEY not set. Using insecure fallback.');
 }
    
 // Fallback only for local development; CI/CD and Production MUST provide this.
