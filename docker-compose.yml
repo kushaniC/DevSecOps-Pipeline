@@ -21,6 +21,7 @@ services:
       - backend-net
     environment:
       - NODE_ENV=unsafe
+      - JWT_PRIVATE_KEY=${JWT_PRIVATE_KEY:-placeholder-insecure-dev-key-do-not-use}
 
 # Network segmentation to demonstrate security best practices
 networks:
