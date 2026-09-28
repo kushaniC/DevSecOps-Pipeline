@@ -14,7 +14,7 @@ services:
 
   # Component 2: Backend API (Using official pre-containerized image as permitted by brief)
   juice-shop:
-    build: .  # <--- Changed from 'image' to 'build' 
+    image: bkimminich/juice-shop:latest
     expose:
       - "3000"
     networks:
