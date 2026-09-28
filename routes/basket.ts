@@ -16,12 +16,21 @@ export function retrieveBasket () {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const id = req.params.id
+      const user = security.authenticatedUsers.from(req)
+      
+      // Secure Coding Fix: Enforce ownership check to prevent IDOR
+      // If the user is logged in and their basket ID (bid) does not match the requested ID, block access.
+      if (user && user.bid && user.bid !== parseInt(id, 10)) {
+        return res.status(403).json({ error: 'Forbidden: You do not have access to this basket.' });
+      }
+
       const basket = await BasketModel.findOne({ where: { id }, include: [{ model: ProductModel, paranoid: false, as: 'Products' }] })
+      
       /* jshint eqeqeq:false */
       challengeUtils.solveIf(challenges.basketAccessChallenge, () => {
-        const user = security.authenticatedUsers.from(req)
         return user && id && id !== 'undefined' && id !== 'null' && id !== 'NaN' && user.bid && user?.bid != parseInt(id, 10) // eslint-disable-line eqeqeq
       })
+      
       if (((basket?.Products) != null) && basket.Products.length > 0) {
         for (let i = 0; i < basket.Products.length; i++) {
           basket.Products[i].name = req.__(basket.Products[i].name)
