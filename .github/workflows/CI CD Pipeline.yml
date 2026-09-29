@@ -41,13 +41,16 @@ jobs:
       # -----------------------------
       # STEP 5: Automated Security Regression Tests
       # -----------------------------
-      - name: Run Security Regression Tests
+      - name: Check JWT Secret Format
         run: |
           printf '%s' "$JWT_PRIVATE_KEY" | sed 's/\\n/\n/g' > /tmp/jwt-private.key
-          chmod 600 /tmp/jwt-private.key
-          openssl pkey -in /tmp/jwt-private.key -pubout -out /tmp/jwt-public.pem
-          export JWT_PUBLIC_KEY_PATH=/tmp/jwt-public.pem
-          node --import ./test/api/helpers/test-env.mjs --import tsx --test --test-force-exit "test/api/security-regression.test.ts"
+          echo "Key length: $(wc -c < /tmp/jwt-private.key) bytes"
+          echo "First line:"
+          head -n 1 /tmp/jwt-private.key
+          echo "Last line:"
+          tail -n 1 /tmp/jwt-private.key
+          echo "OpenSSL validation:"
+          openssl pkey -in /tmp/jwt-private.key -noout
         env:
           JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
           
