@@ -18,13 +18,16 @@ export function retrieveBasket () {
       const id = req.params.id
       const user = security.authenticatedUsers.from(req)
 
+      const basket = await BasketModel.findOne({
+        where: { id },
+        include: [{ model: ProductModel, paranoid: false, as: 'Products' }]
+      })
+
       // Secure Coding Fix: Enforce ownership check to prevent IDOR
-      // If the user is logged in and their basket ID (bid) does not match the requested ID, block access.
-      if (user && user.bid && user.bid !== parseInt(id, 10)) {
+      // Only perform the ownership check when the requested basket actually exists.
+      if (basket && user && user.bid && user.bid !== parseInt(id, 10)) {
         return res.status(403).json({ error: 'Forbidden: You do not have access to this basket.' })
       }
-
-      const basket = await BasketModel.findOne({ where: { id }, include: [{ model: ProductModel, paranoid: false, as: 'Products' }] })
 
       /* jshint eqeqeq:false */
       challengeUtils.solveIf(challenges.basketAccessChallenge, () => {

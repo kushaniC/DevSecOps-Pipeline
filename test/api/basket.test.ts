@@ -41,7 +41,7 @@ before(
 
 void describe('/rest/basket/:id', () => {
   void it('GET existing basket by id is not allowed via public API', async () => {
-    const res = await request(app).get('/rest/basket/1')
+    const res = await request(app).get('/rest/basket/2')
     assert.equal(res.status, 401)
   })
 
@@ -108,18 +108,19 @@ void describe('/api/Baskets/:id', () => {
 })
 
 void describe('/rest/basket/:id', () => {
-  void it('GET existing basket of another user', async () => {
+  void it('GET existing basket of another user is blocked by IDOR protection', async () => {
     const { token } = await login(app, {
       email: 'bjoern.kimminich@gmail.com',
       password: 'bW9jLmxpYW1nQGhjaW5pbW1pay5ucmVvamI='
     })
+
     const res = await request(app)
       .get('/rest/basket/2')
       .set({ Authorization: 'Bearer ' + token })
-    assert.equal(res.status, 200)
-    assert.ok(res.headers['content-type']?.includes('application/json'))
-    assert.equal(res.body.data.id, 2)
-  })
+
+    assert.equal(res.status, 403)
+    assert.ok(res.body.error.includes('Forbidden'))
+  })  
 })
 
 void describe('/rest/basket/:id/checkout', () => {
