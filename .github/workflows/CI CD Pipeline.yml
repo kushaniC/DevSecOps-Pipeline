@@ -1,61 +1,91 @@
-name: CI/CD Pipeline 
+name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build-and-secure:
     runs-on: ubuntu-latest
+
     steps:
+      # -----------------------------
+      # STEP 1: Checkout
+      # -----------------------------
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # --- STEP 1: Build & Basic Validation ---
+      # -----------------------------
+      # STEP 2: Setup Node.js
+      # -----------------------------
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-      
-      # We use --ignore-scripts to skip the broken upstream postinstall E2E test compilation
+          node-version: "24"
+          cache: "npm"
+
+      # -----------------------------
+      # STEP 3: Install dependencies
+      # -----------------------------
       - name: Install dependencies
         run: npm install --ignore-scripts
-      
-      # Prove the backend code compiles successfully with our secure fixes
+
+      # -----------------------------
+      # STEP 4: Build
+      # -----------------------------
       - name: Build Backend Server
         run: npm run build:server
 
-      # --- STEP 2: The 4 Mandatory Security Gates ---
-      
-      # GATE 1: SAST (Semgrep)
+      # -----------------------------
+      # STEP 5: Automated Tests
+      # -----------------------------
+      - name: Run Server Tests
+        run: npm run test:server
+
+      # -----------------------------
+      # SECURITY GATE 1
+      # SAST - Semgrep
+      # -----------------------------
       - name: Run Semgrep SAST
         uses: returntocorp/semgrep-action@v1
         with:
           config: p/default
 
-      # GATE 2: Dependency / SCA Scanning
-      - name: Run npm audit (Fail on High/Critical)
+      # -----------------------------
+      # SECURITY GATE 2
+      # Dependency / SCA
+      # -----------------------------
+      - name: Run npm audit
         run: npm audit --audit-level=high
 
-      # GATE 3: Secrets Scanning (Gitleaks)
+      # -----------------------------
+      # SECURITY GATE 3
+      # Secrets - Gitleaks
+      # -----------------------------
       - name: Run Gitleaks Secrets Scan
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # GATE 4: Container Image Scanning (Trivy)
+      # -----------------------------
+      # STEP 6: Build Docker Image
+      # -----------------------------
       - name: Build Docker Image for Scanning
         run: docker compose build juice-shop
         env:
           JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
-          
+
+      # -----------------------------
+      # SECURITY GATE 4
+      # Container - Trivy
+      # -----------------------------
       - name: Run Trivy Container Scan
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'devsecopspipeline-juice-shop:latest'
-          format: 'table'
-          exit-code: '1' # Forces pipeline to FAIL if CRITICAL/HIGH CVEs are found
+          image-ref: "devsecopspipeline-juice-shop:latest"
+          format: "table"
+          exit-code: "1"
           ignore-unfixed: true
-          severity: 'CRITICAL,HIGH' 
+          severity: "CRITICAL,HIGH"

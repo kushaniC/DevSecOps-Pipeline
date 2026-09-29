@@ -71,3 +71,8 @@ config/*.yml
 # Misc
 .playwright-mcp/
 cypress/screenshots/
+
+# Local development secrets
+.env
+encryptionkeys/jwt-local.key
+encryptionkeys/jwt-local.pub

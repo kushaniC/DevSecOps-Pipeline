@@ -62,18 +62,29 @@ export const denyAll = () => expressJwt({ secret: '' + Math.random() } as any)
 export const authorize = (user?: any) => {
   // If no user is provided (e.g., in test files), return a basic empty token
   if (!user) {
-    return jwt.sign({}, jwtPrivateKey, { expiresIn: '24h' })
+    return jwt.sign({}, jwtPrivateKey, {
+      expiresIn: '24h',
+      algorithm: 'RS256'
+    })
   }
 
-  // Secure Coding Fix: Sanitize JWT payload to exclude ORM data and password
+  // Secure Coding Fix:
+  // Keep the application-required JWT structure while excluding
+  // password, password hash, and unnecessary ORM/Sequelize data.
   const safePayload = {
-    id: user.id,
-    email: user.email,
-    role: user.role,
-    profileImage: user.profileImage
+    data: {
+      id: user.data?.id,
+      email: user.data?.email,
+      role: user.data?.role,
+      profileImage: user.data?.profileImage
+    },
+    bid: user.bid
   }
 
-  return jwt.sign(safePayload, jwtPrivateKey, { expiresIn: '24h' })
+  return jwt.sign(safePayload, jwtPrivateKey, {
+    expiresIn: '24h',
+    algorithm: 'RS256'
+  })
 }
 
 export const verify = (token: string) => token ? (jws.verify as ((token: string, secret: string) => boolean))(token, publicKey) : false
