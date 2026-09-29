@@ -18,15 +18,14 @@ import * as utils from './utils'
 import * as z85 from 'z85'
 
 export const publicKey = fs ? fs.readFileSync('encryptionkeys/jwt.pub', 'utf8') : 'placeholder-public-key'
+
 // Secure Coding Fix: Externalize cryptographic secret to environment variable
-const privateKey = process.env.JWT_PRIVATE_KEY || 'placeholder-insecure-dev-key';
+// Fallback only for local development; CI/CD and Production MUST provide this via .env or GitHub Secrets
+const jwtPrivateKey = process.env.JWT_PRIVATE_KEY || 'placeholder-insecure-dev-key-do-not-use'
 
 if (process.env.JWT_PRIVATE_KEY === 'placeholder-insecure-dev-key') {
-  console.warn('WARNING: JWT_PRIVATE_KEY not set. Using insecure fallback.');
+  console.warn('WARNING: JWT_PRIVATE_KEY not set. Using insecure fallback.')
 }
-   
-// Fallback only for local development; CI/CD and Production MUST provide this.
-const finalPrivateKey = privateKey || 'placeholder-insecure-dev-key-do-not-use';
 
 interface ResponseWithUser {
   status?: string
@@ -59,23 +58,19 @@ export const cutOffPoisonNullByte = (str: string) => {
 
 export const isAuthorized = () => expressJwt(({ secret: publicKey }) as any)
 export const denyAll = () => expressJwt({ secret: '' + Math.random() } as any)
-export const authorize = (user: any = {}) => {
-     // Secure Coding Fix: Construct a completely clean payload. 
-     // Explicitly ignore ORM internals (dataValues) and sensitive fields (password, totpSecret).
-     const userData = user.data || user;
-     
-     const safePayload = {
-       data: {
-         id: userData.id,
-         email: userData.email,
-         role: userData.role,
-         lastLoginIp: userData.lastLoginIp || '0.0.0.0',
-         profileImage: userData.profileImage || '/assets/public/images/uploads/default.svg'
-       }
-     };
-     
-     return jwt.sign(safePayload, finalPrivateKey, { expiresIn: '6h', algorithm: 'RS256' });
+
+export const authorize = (user: any) => {
+  // Secure Coding Fix: Sanitize JWT payload to exclude ORM data and password
+  const safePayload = {
+    id: user.id,
+    email: user.email,
+    role: user.role,
+    profileImage: user.profileImage
+  }
+
+  return jwt.sign(safePayload, jwtPrivateKey, { expiresIn: '24h' })
 }
+
 export const verify = (token: string) => token ? (jws.verify as ((token: string, secret: string) => boolean))(token, publicKey) : false
 export const decode = (token: string) => { return jws.decode(token)?.payload }
 
@@ -171,7 +166,7 @@ export const roles = {
 }
 
 export const deluxeToken = (email: string) => {
-  const hmac = crypto.createHmac('sha256', privateKey)
+  const hmac = crypto.createHmac('sha256', jwtPrivateKey)
   return hmac.update(email + roles.deluxe).digest('hex')
 }
 

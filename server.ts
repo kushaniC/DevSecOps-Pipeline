@@ -284,13 +284,13 @@ function configureApp (app: ReturnType<typeof express>, seq: typeof sequelize) {
   })
 
   // vuln-code-snippet start directoryListingChallenge accessLogDisclosureChallenge
-  /* /ftp directory browsing and file download */ 
+  /* /ftp directory browsing and file download */
   // Explicitly block directory browsing to prevent Information Disclosure
-  app.get('/ftp', (req, res) => {
-     res.status(403).send('Forbidden: Directory browsing is disabled.');
-  });
-  app.use('/ftp(?!/quarantine)/:file', servePublicFiles()) // vuln-code-snippet vuln-line directoryListingChallenge
-  app.use('/ftp/quarantine/:file', serveQuarantineFiles()) // vuln-code-snippet neutral-line directoryListingChallenge
+  app.get('/ftp', (req: Request, res: Response) => {
+    res.status(403).send('Forbidden: Directory browsing is disabled.')
+  })
+  app.use('/ftp(?!/quarantine)/:file', servePublicFiles())
+  app.use('/ftp/quarantine/:file', serveQuarantineFiles())
 
   app.use('/.well-known', serveIndexMiddleware, serveIndex('.well-known', { icons: true, view: 'details' }))
   app.use('/.well-known', express.static('.well-known'))
