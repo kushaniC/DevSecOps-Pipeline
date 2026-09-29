@@ -18,7 +18,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Install dependencies
+      - name: Install dependencies (skip scripts to avoid internal tests/linting)
         run: npm ci --ignore-scripts
       - name: Run npm audit (Fail on High/Critical)
         run: npm audit --audit-level=high
@@ -37,14 +37,15 @@ jobs:
 
       # --- GATE 4: Container Image Scanning (Trivy) ---
       - name: Build Docker Image for Scanning
-        run: docker compose build
+        run: docker compose build juice-shop
         env:
-          JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }} # Inject secret securely for build
+          JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
+          
       - name: Run Trivy Container Scan
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'devsecops-pipeline-juice-shop:latest'
+          image-ref: 'devsecopspipeline-juice-shop:latest'
           format: 'table'
-          exit-code: '1' # Forces pipeline to FAIL if CRITICAL CVEs are found
+          exit-code: '1' 
           ignore-unfixed: true
-          severity: 'CRITICAL' # Set to CRITICAL to avoid permanent failures from old Node.js base images
+          severity: 'CRITICAL,HIGH' 
