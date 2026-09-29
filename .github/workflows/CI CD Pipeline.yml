@@ -43,7 +43,8 @@ jobs:
       # -----------------------------
       - name: Run Security Regression Tests
         run: node --import ./test/api/helpers/test-env.mjs --import tsx --test --test-force-exit "test/api/security-regression.test.ts"
-
+        env:
+          JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
       # -----------------------------
       # SECURITY GATE 1
       # SAST - Semgrep
