@@ -23,6 +23,9 @@ export function retrieveBasket () {
         include: [{ model: ProductModel, paranoid: false, as: 'Products' }]
       })
 
+      console.log('DEBUG basket:', basket?.id, 'UserId:', basket?.UserId)
+      console.log('DEBUG user:', user)
+
       // Secure Coding Fix: Enforce ownership check to prevent IDOR
       // Only perform the ownership check when the requested basket actually exists.
       if (basket && user && user.data?.id && basket.UserId !== user.data.id) {
