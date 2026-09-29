@@ -1,4 +1,4 @@
-name: DevSecOps Security Pipeline
+name: CI/CD Pipeline with DevSecOps Gates
 
 on:
   push:
@@ -7,35 +7,45 @@ on:
     branches: [ "main" ]
 
 jobs:
-  security-gates:
+  build-and-secure:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # --- GATE 2: Dependency / SCA Scanning ---
+      # --- STEP 1: Build & Basic Validation ---
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Install dependencies (skip scripts to avoid internal tests/linting)
+      
+      # We use --ignore-scripts to skip the broken upstream postinstall E2E test compilation
+      - name: Install dependencies
         run: npm install --ignore-scripts
-      - name: Run npm audit (Fail on High/Critical)
-        run: npm audit --audit-level=high
+      
+      # Prove the backend code compiles successfully with our secure fixes
+      - name: Build Backend Server
+        run: npm run build:server
 
-      # --- GATE 1: SAST (Semgrep) ---
+      # --- STEP 2: The 4 Mandatory Security Gates ---
+      
+      # GATE 1: SAST (Semgrep)
       - name: Run Semgrep SAST
         uses: returntocorp/semgrep-action@v1
         with:
           config: p/default
 
-      # --- GATE 3: Secrets Scanning (Gitleaks) ---
+      # GATE 2: Dependency / SCA Scanning
+      - name: Run npm audit (Fail on High/Critical)
+        run: npm audit --audit-level=high
+
+      # GATE 3: Secrets Scanning (Gitleaks)
       - name: Run Gitleaks Secrets Scan
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # --- GATE 4: Container Image Scanning (Trivy) ---
+      # GATE 4: Container Image Scanning (Trivy)
       - name: Build Docker Image for Scanning
         run: docker compose build juice-shop
         env:
@@ -46,6 +56,6 @@ jobs:
         with:
           image-ref: 'devsecopspipeline-juice-shop:latest'
           format: 'table'
-          exit-code: '1' 
+          exit-code: '1' # Forces pipeline to FAIL if CRITICAL/HIGH CVEs are found
           ignore-unfixed: true
           severity: 'CRITICAL,HIGH' 
