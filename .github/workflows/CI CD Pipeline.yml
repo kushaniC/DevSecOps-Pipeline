@@ -1,4 +1,4 @@
-name: CI/CD Pipeline with DevSecOps Gates
+name: CI/CD Pipeline 
 
 on:
   push:
