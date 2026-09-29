@@ -19,7 +19,7 @@ jobs:
         with:
           node-version: '20'
       - name: Install dependencies (skip scripts to avoid internal tests/linting)
-        run: npm ci --ignore-scripts
+        run: npm install --ignore-scripts
       - name: Run npm audit (Fail on High/Critical)
         run: npm audit --audit-level=high
 
