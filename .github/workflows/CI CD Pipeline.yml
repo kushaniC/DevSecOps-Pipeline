@@ -30,7 +30,7 @@ jobs:
       # STEP 3: Install dependencies
       # -----------------------------
       - name: Install dependencies
-        run: npm install --ignore-scripts
+        run: npm install 
 
       # -----------------------------
       # STEP 4: Build
@@ -39,10 +39,10 @@ jobs:
         run: npm run build:server
 
       # -----------------------------
-      # STEP 5: Automated Tests
+      # STEP 5: Automated Security Regression Tests
       # -----------------------------
-      - name: Run Server Tests
-        run: npm run test:server
+      - name: Run Security Regression Tests
+        run: node --import ./test/api/helpers/test-env.mjs --import tsx --test --test-force-exit "test/api/security-regression.test.ts"
 
       # -----------------------------
       # SECURITY GATE 1
