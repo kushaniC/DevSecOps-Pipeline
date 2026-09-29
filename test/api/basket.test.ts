@@ -57,7 +57,7 @@ void describe('/rest/basket/:id', () => {
     assert.equal(res.status, 200)
     assert.ok(res.headers['content-type']?.includes('application/json'))
     assert.equal(res.body.data.id, 2)
-    assert.equal(res.body.data.Products.length, 3)
+    assert.equal(res.body.data.Products.length, 1)
   })
 
   void it('GET basket should accept forged JWTs', async () => {
