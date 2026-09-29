@@ -21,10 +21,10 @@ export const publicKey = fs ? fs.readFileSync('encryptionkeys/jwt.pub', 'utf8') 
 
 // Secure Coding Fix: Externalize cryptographic secret to environment variable
 // Fallback only for local development; CI/CD and Production MUST provide this via .env or GitHub Secrets
-const jwtPrivateKey = process.env.JWT_PRIVATE_KEY || 'placeholder-insecure-dev-key-do-not-use'
+const jwtPrivateKey = process.env.JWT_PRIVATE_KEY
 
-if (process.env.JWT_PRIVATE_KEY === 'placeholder-insecure-dev-key') {
-  console.warn('WARNING: JWT_PRIVATE_KEY not set. Using insecure fallback.')
+if (!jwtPrivateKey) {
+  throw new Error('JWT_PRIVATE_KEY environment variable is required')
 }
 
 interface ResponseWithUser {
