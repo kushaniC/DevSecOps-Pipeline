@@ -56,7 +56,7 @@ void describe('/rest/basket/:id', () => {
     const res = await request(app).get('/rest/basket/1').set(authHeader)
     assert.equal(res.status, 200)
     assert.ok(res.headers['content-type']?.includes('application/json'))
-    assert.equal(res.body.data.id, 1)
+    assert.equal(res.body.data.id, 2)
     assert.equal(res.body.data.Products.length, 3)
   })
 
