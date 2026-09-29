@@ -25,7 +25,7 @@ export function retrieveBasket () {
 
       // Secure Coding Fix: Enforce ownership check to prevent IDOR
       // Only perform the ownership check when the requested basket actually exists.
-      if (basket && user && user.bid && user.bid !== parseInt(id, 10)) {
+      if (basket && user && user.data?.id && basket.UserId !== user.data.id) {
         return res.status(403).json({ error: 'Forbidden: You do not have access to this basket.' })
       }
 
