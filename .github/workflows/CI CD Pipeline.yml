@@ -65,9 +65,16 @@ jobs:
       # Dependency / SCA
       # -----------------------------
       - name: Run npm audit
-        run: npm audit --audit-level=high
-        continue-on-error: true
+        run: |
+          npm audit --audit-level=high > npm-audit-report.txt 2>&1 || true
 
+      - name: Upload npm audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-report
+          path: npm-audit-report.txt
+          retention-days: 30
       # -----------------------------
       # SECURITY GATE 3
       # Secrets - Gitleaks
