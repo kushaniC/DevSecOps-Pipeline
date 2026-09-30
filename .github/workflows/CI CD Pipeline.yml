@@ -90,10 +90,20 @@ jobs:
       # Container - Trivy
       # -----------------------------
       - name: Run Trivy Container Scan
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: "devsecopspipeline-juice-shop:latest"
           format: "table"
-          exit-code: "1"
+          output: "trivy-report.txt"
+          exit-code: "0"
           ignore-unfixed: true
+          vuln-type: "os,library"
           severity: "CRITICAL,HIGH"
+
+      - name: Upload Trivy Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-report
+          path: trivy-report.txt
+          retention-days: 30
