@@ -41,7 +41,6 @@ jobs:
       # -----------------------------
       # STEP 5: Automated Security Regression Tests
       # -----------------------------
-    
       - name: Run Security Regression Tests
         run: |
           printf '%s' "$JWT_PRIVATE_KEY" | sed 's/\\n/\n/g' > /tmp/jwt-private.key
@@ -51,7 +50,7 @@ jobs:
           node --import ./test/api/helpers/test-env.mjs --import tsx --test --test-force-exit "test/api/security-regression.test.ts"
         env:
           JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
-          
+      
       # -----------------------------
       # SECURITY GATE 1
       # SAST - Semgrep
