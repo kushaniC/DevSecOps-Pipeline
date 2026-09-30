@@ -18,3 +18,10 @@ coverage
 frontend/node_modules/
 frontend/dist/
 frontend/.angular/
+
+# Infrastructure files are not required at application runtime
+terraform/
+
+# Local JWT development keys must never enter the Docker image
+encryptionkeys/jwt-local.key
+encryptionkeys/jwt-local.pub
