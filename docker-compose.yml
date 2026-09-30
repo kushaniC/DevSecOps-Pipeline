@@ -14,6 +14,7 @@ services:
 
   # Component 2: Backend API (Using official pre-containerized image as permitted by brief)
   juice-shop:
+    image: devsecopspipeline-juice-shop:latest
     build: .
     expose:
       - "3000"
@@ -29,4 +30,4 @@ networks:
     driver: bridge
   backend-net:
     driver: bridge
-    internal: true # This prevents the backend from being accessed directly from the outside internet
+    internal: true
