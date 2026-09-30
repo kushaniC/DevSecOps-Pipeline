@@ -1,0 +1,13 @@
+title = "DevSecOps Pipeline Gitleaks Configuration"
+
+[allowlist]
+description = "Known OWASP Juice Shop challenge and test fixture values"
+
+paths = [
+  '''^routes/login\.ts$''',
+  '''^data/static/users\.yml$''',
+  '''^frontend/src/app/.*\.spec\.ts$''',
+  '''^test/.*\.test\.ts$''',
+  '''^terraform/networking\.tf$''',
+  '''^infrastructure/terraform/networking\.tf$'''
+]
