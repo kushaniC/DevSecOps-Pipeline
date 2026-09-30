@@ -66,8 +66,8 @@ jobs:
       # -----------------------------
       - name: Run npm audit
         run: |
-            npm audit fix --force 
-      #    npm audit --audit-level=high > npm-audit-report.txt 2>&1 || true
+          npm audit --audit-level=high > npm-audit-report.txt 2>&1 || true
+          npm audit fix --force
 
       - name: Upload npm audit report
         if: always()
